@@ -216,7 +216,7 @@ public class App extends JFrame {
 	    SwingUtilities.invokeLater(doSwingLater);
     }
 
-	private static class MyImage extends JComponent {
+	public static class MyImage extends JComponent {
 
 		/**
 		 * 
