@@ -20,9 +20,9 @@ public class TwoLevelCache<K, V extends Serializable> implements Cache<K, V>{
 	public TwoLevelCache(int maxSizeFirst, int maxSizeSecond, float recachePart, TYPE level1, TYPE level2){
 		
 		if(level2.equals(TYPE.LFU))
-			fileSystemCache = new LFUFileSystemCache<K, V>(maxSizeFirst, null);
+			fileSystemCache = new LFUFileSystemCache<K, V>(maxSizeSecond, null);
 		else
-			fileSystemCache = new LRUFileSystemCache<K, V>(maxSizeFirst, null);		
+			fileSystemCache = new LRUFileSystemCache<K, V>(maxSizeSecond, null);		
 	
 		
 		if(level1.equals(TYPE.LFU))
