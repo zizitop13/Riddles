@@ -15,13 +15,14 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.UUID;
 
-import cache.LFUCache;
+import cache.CacheEntryWrapper;
+import cache.PriorityCache;
 import cache.common.CacheMonitor;
 import cache.common.CacheNotAvailableException;
 
-public class LFUFileSystemCache<K, V extends Serializable> implements LFUCache<K, V> {
+public class LFUFileSystemCache<K, V extends Serializable> implements PriorityCache<K, V> {
 
-	private Map<K, LFUCacheEntry<K, V>> idMap;
+	private Map<K, CacheEntryWrapper<K, V>> idMap;
 
 	private int maxSize;
 
@@ -29,7 +30,7 @@ public class LFUFileSystemCache<K, V extends Serializable> implements LFUCache<K
 
 	public LFUFileSystemCache(int maxSize, String folderTempPath) {
 
-		this.idMap = new HashMap<K, LFUCacheEntry<K, V>>();
+		this.idMap = new HashMap<K, CacheEntryWrapper<K, V>>();
 
 		this.maxSize = maxSize;
 
@@ -47,7 +48,7 @@ public class LFUFileSystemCache<K, V extends Serializable> implements LFUCache<K
 	
 	public V get(K key) {
 
-		LFUCacheEntry<K, V> entry = idMap.get(key);
+		CacheEntryWrapper<K, V> entry = idMap.get(key);
 
 		V deserializedObject = null;
 
@@ -91,7 +92,7 @@ public class LFUFileSystemCache<K, V extends Serializable> implements LFUCache<K
 			
 		}
 
-		LFUCacheEntry<K, V> lfuFileSysEntry = new LFUCacheEntry<K, V>(key, null);
+		CacheEntryWrapper<K, V> lfuFileSysEntry = new LFUCacheEntry<K, V>(key, null);
 
 		lfuFileSysEntry.setFilePath(tmpFile.getAbsolutePath());
 
@@ -106,7 +107,7 @@ public class LFUFileSystemCache<K, V extends Serializable> implements LFUCache<K
 
 		Objects.requireNonNull(value);
 
-		LFUCacheEntry<K, V> entry = idMap.get(key);
+		CacheEntryWrapper<K, V> entry = idMap.get(key);
 		
 		File tmpFile = null;
 
@@ -115,11 +116,11 @@ public class LFUFileSystemCache<K, V extends Serializable> implements LFUCache<K
 		
 		else 
 			if (maxSize == idMap.size())				
-				delete(getMostFrequentlyUsedEntry().poll().getKey());
+				delete(getMostPriorityUsedEntry().poll().getKey());
 		
 		
 		if(tmpFile==null || !tmpFile.exists()) {
-			String id = "test"+ UUID.randomUUID().toString();
+			String id =  UUID.randomUUID().toString();
 			
 			try {
 				
@@ -160,11 +161,11 @@ public class LFUFileSystemCache<K, V extends Serializable> implements LFUCache<K
 
 	
 	public void resize(int maxSize) {
-		Map<K, LFUCacheEntry<K,V>> resizedMap = new HashMap<K, LFUCacheEntry<K,V>>(maxSize, 2f);
+		Map<K, CacheEntryWrapper<K,V>> resizedMap = new HashMap<K, CacheEntryWrapper<K,V>>(maxSize, 2f);
 		
 		if(this.maxSize > maxSize) {
 			
-			Queue<LFUCacheEntry<K,V>> q = getMostFrequentlyUsedEntry();
+			Queue<CacheEntryWrapper<K,V>> q = getMostPriorityUsedEntry();
 			
 			for(int i =0; i < this.maxSize-maxSize; i++) 
 				delete(q.poll().getKey());			
@@ -200,18 +201,18 @@ public class LFUFileSystemCache<K, V extends Serializable> implements LFUCache<K
 	}
 
 	
-	public Queue<LFUCacheEntry<K, V>> getMostFrequentlyUsedEntry() {
+	public Queue<CacheEntryWrapper<K, V>> getMostPriorityUsedEntry() {
 
-		Queue<LFUCacheEntry<K, V>> frequencyQ;
+		Queue<CacheEntryWrapper<K, V>> frequencyQ;
 
 		if (idMap.isEmpty())
-			return new PriorityQueue<LFUCacheEntry<K, V>>();
+			return new PriorityQueue<CacheEntryWrapper<K, V>>();
 
-		frequencyQ = new PriorityQueue<LFUCacheEntry<K, V>>(idMap.size(),
+		frequencyQ = new PriorityQueue<CacheEntryWrapper<K, V>>(idMap.size(),
 
 				(entry_1, entry_2) ->
 
-				entry_1.getPriority().compareTo(entry_2.getPriority())
+				((Integer) entry_1.getPriority()).compareTo((Integer)entry_2.getPriority())
 
 		);
 
@@ -221,7 +222,7 @@ public class LFUFileSystemCache<K, V extends Serializable> implements LFUCache<K
 	}
 
 	
-	public int getFrecquencyOf(K key) {
+	public Number getPriorityOf(K key) {
 		return idMap.get(key).getPriority();
 	}
 

@@ -6,22 +6,33 @@ import cache.Cache;
 import cache.common.CacheNotAvailableException;
 import cache.lfu.LFUFileSystemCache;
 import cache.lfu.LFUMemoryCache;
+import cache.lru.LRUFileSystemCache;
+import cache.lru.LRUMemoryCache;
 
 public class TwoLevelCache<K, V extends Serializable> implements Cache<K, V>{
 	
-	private static final int max_size = 10;
 	
 	private Cache<K, V> fileSystemCache;
 	
 	private Cache<K, V> memoryCache;
 	
 		
-	public TwoLevelCache(int max_size){
+	public TwoLevelCache(int maxSizeFirst, int maxSizeSecond, float recachePart, TYPE level1, TYPE level2){
 		
-		setFileSystemCache(new LFUFileSystemCache<K, V>(max_size / 2, null));
+		if(level2.equals(TYPE.LFU))
+			fileSystemCache = new LFUFileSystemCache<K, V>(maxSizeFirst, null);
+		else
+			fileSystemCache = new LRUFileSystemCache<K, V>(maxSizeFirst, null);		
+	
 		
-		setMemoryCache(new LFUMemoryCache<K, V>(max_size / 2, getFileSystemCache()));
+		if(level1.equals(TYPE.LFU))
+			memoryCache = new LFUMemoryCache<K, V>(maxSizeFirst, getFileSystemCache(), recachePart);
+		else
+			memoryCache = new LRUMemoryCache<K, V>(maxSizeFirst, getFileSystemCache(), recachePart);
 		
+
+			
+			
 	}
 
 	@Override

@@ -18,6 +18,8 @@ import cache.Cache;
 import cache.common.CacheNotAvailableException;
 import cache.lfu.LFUFileSystemCache;
 import cache.lfu.LFUMemoryCache;
+import cache.lru.LRUFileSystemCache;
+import cache.lru.LRUMemoryCache;
 
 @RunWith(Parameterized.class)
 public class CommonCacheCase {
@@ -33,6 +35,10 @@ public class CommonCacheCase {
 		params.add(new Object[] { new LFUMemoryCache<String, String>(MAX_SIZE) });
 		
 		params.add(new Object[] { new LFUFileSystemCache<String, String>(MAX_SIZE, null) });
+		
+		params.add(new Object[] { new LRUMemoryCache<String, String>(MAX_SIZE) });
+		
+		params.add(new Object[] { new LRUFileSystemCache<String, String>(MAX_SIZE, null) });
 		
 		return params;
 	}

@@ -8,7 +8,8 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 
 import cache.Cache;
-import cache.LFUCache;
+import cache.CacheEntryWrapper;
+import cache.PriorityCache;
 import cache.Recacheble;
 import cache.common.CacheMonitor;
 import cache.common.CacheNotAvailableException;
@@ -22,7 +23,7 @@ import cache.common.CacheNotAvailableException;
  * @param <K>
  * @param <V>
  */
-public class LFUMemoryCache<K, V> implements LFUCache<K, V>, Recacheble {
+public class LFUMemoryCache<K, V> implements PriorityCache<K, V>, Recacheble {
 
 	private Map<K, LFUCacheEntry<K,V>> heap;
 	
@@ -38,6 +39,18 @@ public class LFUMemoryCache<K, V> implements LFUCache<K, V>, Recacheble {
 	}
 	
 	public LFUMemoryCache(int maxSize, Cache<K, V> nextLevelCache){
+		
+		Objects.requireNonNull(nextLevelCache);	
+		
+		this.nextLevelCache = nextLevelCache;
+		
+		init(maxSize);		
+		
+	}
+	
+	public LFUMemoryCache(int maxSize, Cache<K, V> nextLevelCache, float recachePartion){
+		
+		this.recachePartion = recachePartion;
 		
 		Objects.requireNonNull(nextLevelCache);	
 		
@@ -102,7 +115,7 @@ public class LFUMemoryCache<K, V> implements LFUCache<K, V>, Recacheble {
 			if(nextLevelCache!=null)					
 				recache();
 			else 
-				delete(getMostFrequentlyUsedEntry().poll().getKey());									
+				delete(getMostPriorityUsedEntry().poll().getKey());									
 			
 		}
 
@@ -142,7 +155,7 @@ public class LFUMemoryCache<K, V> implements LFUCache<K, V>, Recacheble {
 		
 		if(this.maxSize > maxSize) {
 			
-			Queue<LFUCacheEntry<K,V>> q = getMostFrequentlyUsedEntry();
+			Queue<CacheEntryWrapper<K,V>> q = getMostPriorityUsedEntry();
 			
 			for(int i =0; i < this.maxSize-maxSize; i++) 
 				delete(q.poll().getKey());			
@@ -173,18 +186,18 @@ public class LFUMemoryCache<K, V> implements LFUCache<K, V>, Recacheble {
 	}
 
 
-	public Queue<LFUCacheEntry<K,V>> getMostFrequentlyUsedEntry() {
+	public Queue<CacheEntryWrapper<K,V>> getMostPriorityUsedEntry() {
 		
-		Queue<LFUCacheEntry<K,V>> frequencyQ;
+		Queue<CacheEntryWrapper<K,V>> frequencyQ;
 		
 		if(heap.isEmpty())
-			return new PriorityQueue<LFUCacheEntry<K,V>>();
+			return new PriorityQueue<CacheEntryWrapper<K,V>>();
 		
-		frequencyQ  = new PriorityQueue<LFUCacheEntry<K,V>>(heap.size(),
+		frequencyQ  = new PriorityQueue<CacheEntryWrapper<K,V>>(heap.size(),
 				
 				(entry_1, entry_2) -> 
 				
-				entry_1.getPriority().compareTo(entry_2.getPriority()) 
+				((Integer) entry_1.getPriority()).compareTo((Integer) entry_2.getPriority()) 
 				
 				);
 		
@@ -194,7 +207,7 @@ public class LFUMemoryCache<K, V> implements LFUCache<K, V>, Recacheble {
 	}
 
 
-	public int getFrecquencyOf(K key) {
+	public Number getPriorityOf(K key) {
 		return heap.get(key).getPriority();
 	}
 
@@ -207,9 +220,11 @@ public class LFUMemoryCache<K, V> implements LFUCache<K, V>, Recacheble {
 		
 		Objects.requireNonNull(nextLevelCache);
 
-		Queue<LFUCacheEntry<K,V>> frequencyQ  = getMostFrequentlyUsedEntry();
+		Queue<CacheEntryWrapper<K,V>> frequencyQ  = getMostPriorityUsedEntry();
 		
-		for(int i = 0; i < frequencyQ.size() * recachePartion; i++) {
+		int size = frequencyQ.size();
+		
+		for(int i = 0; i < size * recachePartion; i++) {
 			
 			LFUCacheEntry<K,V> entry =  heap.remove(frequencyQ.poll().getKey());
 			

@@ -11,16 +11,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 
-import cache.LFUCache;
+import cache.CacheEntryWrapper;
+import cache.PriorityCache;
 import cache.lfu.LFUCacheEntry;
 import cache.lfu.LFUFileSystemCache;
 import cache.lfu.LFUMemoryCache;
 
 
 
-public class LFUFrecquencyCase {
+public class PriorityCase {
 	
-	LFUCache<String, Object> lfuCache;
+	PriorityCache<String, Object> lfuCache;
 	
 	private static final int MAX_SIZE = 10;
 	
@@ -52,7 +53,7 @@ public class LFUFrecquencyCase {
 		
 		lfuCache.get("img_1");
 		
-		assertEquals(2, lfuCache.getFrecquencyOf("img_1"));
+		assertEquals(2, lfuCache.getPriorityOf("img_1"));
 		
 	}
 	
@@ -71,7 +72,7 @@ public class LFUFrecquencyCase {
 		
 		lfuCache.get("img_3");
 		
-		Queue<LFUCacheEntry<String, Object>> q = lfuCache.getMostFrequentlyUsedEntry();
+		Queue<CacheEntryWrapper<String, Object>> q = lfuCache.getMostPriorityUsedEntry();
 		
 		assertEquals(new Integer(1), q.poll().getPriority());
 		

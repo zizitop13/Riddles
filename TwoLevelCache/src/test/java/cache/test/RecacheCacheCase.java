@@ -5,15 +5,15 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import cache.LFUCache;
+import cache.PriorityCache;
 import cache.Recacheble;
 import cache.lfu.LFUMemoryCache;
 
 public class RecacheCacheCase {
 	
-	LFUCache<String, Object> lfuCache_level_1;
+	PriorityCache<String, Object> lfuCache_level_1;
 	
-	LFUCache<String, Object> lfuCache_level_2;
+	PriorityCache<String, Object> lfuCache_level_2;
 	
 	@Before
 	public void setUp() {
@@ -34,9 +34,9 @@ public class RecacheCacheCase {
 		
 		((Recacheble) lfuCache_level_1).recache();
 		
-		assertEquals(8, lfuCache_level_1.size());
+		assertEquals(7, lfuCache_level_1.size());
 		
-		assertEquals(2, lfuCache_level_2.size());
+		assertEquals(3, lfuCache_level_2.size());
 		
 		assertTrue(lfuCache_level_2.contains("img_10"));
 
@@ -53,9 +53,9 @@ public class RecacheCacheCase {
 		
 		lfuCache_level_1.put("img_"+11, new Object());
 		
-		assertEquals(9, lfuCache_level_1.size());
+		assertEquals(8, lfuCache_level_1.size());
 		
-		assertEquals(2, lfuCache_level_2.size());
+		assertEquals(3, lfuCache_level_2.size());
 		
 		assertTrue(lfuCache_level_2.contains("img_10"));
 		

@@ -1,15 +1,29 @@
 package cache;
 
-
+/**
+ * Wrapper for entry of priority cache
+ * @author Maxim
+ *
+ * @param <K>
+ * @param <V>
+ */
 public interface CacheEntryWrapper<K, V> {
 	
-	public Integer getPriority();
+	public Number getPriority();
 	
-	public void incrementPriority();
+	public void setPriority(Number priority);
 	
 	public V getValue();
 	
 	public K getKey();
+	
+	public String getFilePath();
+	
+	public void setFilePath(String path);
+	
+	public void incrementPriority();
+	
+	public void setValue(V value);
 	
 
 }

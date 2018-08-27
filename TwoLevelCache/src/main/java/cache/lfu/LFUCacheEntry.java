@@ -75,6 +75,14 @@ public class LFUCacheEntry<K, V> implements CacheEntryWrapper<K, V> {
 
 
 
+	@Override
+	public void setPriority(Number priority) {
+		this.frequency = (Integer) priority;
+		
+	}
+
+
+
 
 	
 	
